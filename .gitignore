@@ -1,0 +1,6 @@
+/local.properties
+/.idea/
+/.kotlin/
+/.gradle/
+/app/build/
+/gradle/gradle-daemon-jvm.properties
