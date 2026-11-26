@@ -42,7 +42,7 @@ class PassLoadController(
         }
     }
 
-    fun refresh() {
+     fun refresh() {
         if (loadJob?.isActive == true) return
         if (state.value !is PassScreenState.Content) return
         (state as MutableStateFlow<PassScreenState>).update { current ->

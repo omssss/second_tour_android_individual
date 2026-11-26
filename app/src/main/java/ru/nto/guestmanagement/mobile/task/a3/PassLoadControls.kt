@@ -30,29 +30,20 @@ fun PassLoadControls(
             Column {
                 if (state.isRefreshing) {
                     CircularProgressIndicator(modifier = modifier.testTag(TestIds.PASS_LOADING))
-                    Button(onClick = onRefresh, enabled = false) {
-                        Text(
-                            text = stringResource(R.string.action_refresh),
-                            modifier = modifier.testTag(
-                                TestIds.PASS_REFRESH
-                            )
+                }
+                Button(onClick = onRefresh, enabled = !state.isRefreshing) {
+                    Text(
+                        text = stringResource(R.string.action_refresh),
+                        modifier = modifier.testTag(
+                            TestIds.PASS_REFRESH
                         )
-                    }
-                } else {
-                    Button(onClick = onRefresh) {
-                        Text(
-                            text = stringResource(R.string.action_refresh),
-                            modifier = modifier.testTag(
-                                TestIds.PASS_REFRESH
-                            )
-                        )
-                    }
-                    if (state.isOffline) {
-                        Text(
-                            text = stringResource(R.string.offline),
-                            modifier = modifier.testTag(TestIds.PASS_OFFLINE)
-                        )
-                    }
+                    )
+                }
+                if (state.isOffline) {
+                    Text(
+                        text = stringResource(R.string.offline),
+                        modifier = modifier.testTag(TestIds.PASS_OFFLINE)
+                    )
                 }
             }
         }
