@@ -16,11 +16,14 @@ class PassLoadController(
     private val scope: CoroutineScope,
 ) {
     private var loadJob: Job? = null
+    private var startLock: Boolean = false
     val state: StateFlow<PassScreenState> = MutableStateFlow(PassScreenState.InitialLoading)
 
     fun start() {
-        if (loadJob?.isActive == true) return
+        if (startLock) return
+        startLock = true
         if (state.value !is PassScreenState.InitialLoading) return
+        if (loadJob?.isActive == true) return
         loadJob = scope.launch {
             repository.load()
                 .onFailure { error ->
@@ -31,23 +34,19 @@ class PassLoadController(
                     }
                 }
                 .onSuccess { data ->
-                    (state as MutableStateFlow<PassScreenState>).update { current ->
-                        if (current is PassScreenState.Content) {
-                            current.copy(data = data, isRefreshing = false, isOffline = false)
-                        } else {
-                            PassScreenState.Content(data, isRefreshing = false, isOffline = false)
-                        }
+                    (state as MutableStateFlow<PassScreenState>).update {
+                        PassScreenState.Content(data, isRefreshing = false, isOffline = false)
                     }
                 }
         }
     }
 
-     fun refresh() {
+    fun refresh() {
         if (loadJob?.isActive == true) return
         if (state.value !is PassScreenState.Content) return
         (state as MutableStateFlow<PassScreenState>).update { current ->
             if (current is PassScreenState.Content) {
-                current.copy(isRefreshing = true, isOffline = false)
+                current.copy(isRefreshing = true)
             } else {
                 current
             }
@@ -64,12 +63,8 @@ class PassLoadController(
                     }
                 }
                 .onSuccess { data ->
-                    state.update { current ->
-                        if (current is PassScreenState.Content) {
-                            current.copy(data = data, isRefreshing = false, isOffline = false)
-                        } else {
-                            PassScreenState.Content(data, isRefreshing = false, isOffline = false)
-                        }
+                    state.update {
+                        PassScreenState.Content(data, isRefreshing = false, isOffline = false)
                     }
                 }
         }
@@ -81,6 +76,20 @@ class PassLoadController(
         (state as MutableStateFlow<PassScreenState>).update {
             PassScreenState.InitialLoading
         }
-        start()
+        loadJob = scope.launch {
+            repository.load()
+                .onFailure { error ->
+                    state.update {
+                        PassScreenState.InitialError(
+                            message = error.message ?: "Не удалось загрузить пропуск"
+                        )
+                    }
+                }
+                .onSuccess { data ->
+                    state.update {
+                        PassScreenState.Content(data, isRefreshing = false, isOffline = false)
+                    }
+                }
+        }
     }
 }

@@ -6,6 +6,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -28,10 +32,16 @@ fun PassLoadControls(
 
         is PassScreenState.Content -> {
             Column {
+                var pending by remember(state.isRefreshing) { mutableStateOf(false) }
                 if (state.isRefreshing) {
                     CircularProgressIndicator(modifier = modifier.testTag(TestIds.PASS_LOADING))
                 }
-                Button(onClick = onRefresh, enabled = !state.isRefreshing) {
+                Button(onClick = {
+                    if (!state.isRefreshing && !pending) {
+                        pending = true
+                        onRefresh()
+                    }
+                }, enabled = !state.isRefreshing && !pending) {
                     Text(
                         text = stringResource(R.string.action_refresh),
                         modifier = modifier.testTag(
@@ -39,7 +49,7 @@ fun PassLoadControls(
                         )
                     )
                 }
-                if (state.isOffline) {
+                if (!state.isRefreshing && state.isOffline) {
                     Text(
                         text = stringResource(R.string.offline),
                         modifier = modifier.testTag(TestIds.PASS_OFFLINE)
@@ -50,8 +60,14 @@ fun PassLoadControls(
 
         is PassScreenState.InitialError -> {
             Column {
+                var enable by remember { mutableStateOf(true) }
                 Text(text = state.message, modifier = modifier.testTag(TestIds.PASS_ERROR))
-                Button(onClick = onRetry) {
+                Button(onClick = {
+                    if (enable) {
+                        enable = false
+                        onRetry()
+                    }
+                }, enabled = enable) {
                     Text(
                         text = stringResource(R.string.action_retry),
                         modifier = modifier.testTag(TestIds.PASS_RETRY)
