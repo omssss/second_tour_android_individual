@@ -36,17 +36,18 @@ fun PassLoadControls(
                 if (state.isRefreshing) {
                     CircularProgressIndicator(modifier = modifier.testTag(TestIds.PASS_LOADING))
                 }
-                Button(onClick = {
-                    if (!state.isRefreshing && !pending) {
-                        pending = true
-                        onRefresh()
-                    }
-                }, enabled = !state.isRefreshing && !pending) {
+                Button(
+                    onClick = {
+                        if (!state.isRefreshing && !pending) {
+                            pending = true
+                            onRefresh()
+                        }
+                    }, enabled = !state.isRefreshing && !pending, modifier = modifier.testTag(
+                        TestIds.PASS_REFRESH
+                    )
+                ) {
                     Text(
-                        text = stringResource(R.string.action_refresh),
-                        modifier = modifier.testTag(
-                            TestIds.PASS_REFRESH
-                        )
+                        text = stringResource(R.string.action_refresh)
                     )
                 }
                 if (!state.isRefreshing && state.isOffline) {
@@ -67,10 +68,9 @@ fun PassLoadControls(
                         enable = false
                         onRetry()
                     }
-                }, enabled = enable) {
+                }, enabled = enable, modifier = modifier.testTag(TestIds.PASS_RETRY)) {
                     Text(
-                        text = stringResource(R.string.action_retry),
-                        modifier = modifier.testTag(TestIds.PASS_RETRY)
+                        text = stringResource(R.string.action_retry)
                     )
                 }
             }
